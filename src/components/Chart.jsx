@@ -1,13 +1,16 @@
+import { memo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF6361', '#BC5090', '#58508D'];
 
-export default function Chart({ data, type, onTypeChange }) {
+const Chart = memo(function Chart({ data, type, onTypeChange }) {
   const handleTypeChange = (newType) => {
     if (newType !== type) onTypeChange(newType);
   };
 
   const title = type === 'expense' ? 'Расходы по категориям' : 'Доходы по категориям';
+
+  const isAnimationActive = data && data.length <= 10;
 
   if (!data || data.length === 0) {
     return (
@@ -63,6 +66,7 @@ export default function Chart({ data, type, onTypeChange }) {
             dataKey="value"
             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
             labelLine={false}
+            isAnimationActive={isAnimationActive} 
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -73,4 +77,6 @@ export default function Chart({ data, type, onTypeChange }) {
       </ResponsiveContainer>
     </div>
   );
-}
+});
+
+export default Chart;

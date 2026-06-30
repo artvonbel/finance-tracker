@@ -3,16 +3,12 @@ import { useState, useEffect } from 'react';
 import { getTransactions, saveTransactions } from '../utils/storage';
 
 export const useTransactions = () => {
-  // Загружаем данные сразу при создании состояния (ленивая инициализация)
   const [transactions, setTransactions] = useState(() => {
     const data = getTransactions();
-    console.log('📥 Загружено из localStorage при инициализации:', data);
     return data;
   });
 
-  // Сохраняем при каждом изменении
   useEffect(() => {
-    console.log('💾 Сохраняем транзакции:', transactions);
     saveTransactions(transactions);
   }, [transactions]);
 

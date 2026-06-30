@@ -1,25 +1,24 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { useTransactions } from './hooks/useTransactions';
 import Header from './components/Header';
 import Balance from './components/Balance';
 import TransactionForm from './components/TransactionForm';
 import TransactionList from './components/TransactionList';
-import Chart from './components/Chart';
 import Filter from './components/Filter';
-import ExportButton from './components/ExportButton'; // ← импорт кнопки экспорта
+import ExportButton from './components/ExportButton';
+
+const Chart = lazy(() => import('./components/Chart'));
 
 function App() {
   const { transactions, addTransaction, deleteTransaction } = useTransactions();
   const [filter, setFilter] = useState('all');
   const [chartType, setChartType] = useState('expense');
 
-  // Фильтрация
   const filteredTransactions = useMemo(() => {
     if (filter === 'all') return transactions;
     return transactions.filter(t => t.type === filter);
   }, [transactions, filter]);
 
-  // Статистика за текущий месяц
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
@@ -43,7 +42,6 @@ function App() {
     return monthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
   }, [monthTransactions]);
 
-  // Данные для диаграммы расходов
   const chartDataExpense = useMemo(() => {
     const expenseByCategory = monthTransactions
       .filter(t => t.type === 'expense')
@@ -54,7 +52,6 @@ function App() {
     return Object.entries(expenseByCategory).map(([name, value]) => ({ name, value }));
   }, [monthTransactions]);
 
-  // Данные для диаграммы доходов
   const chartDataIncome = useMemo(() => {
     const incomeByCategory = monthTransactions
       .filter(t => t.type === 'income')
@@ -84,7 +81,9 @@ function App() {
             <TransactionForm onAdd={addTransaction} />
           </div>
           <div>
-            <Chart data={chartData} type={chartType} onTypeChange={setChartType} />
+            <Suspense fallback={<div className="bg-white p-4 rounded-lg shadow-md h-80 flex items-center justify-center text-gray-500">Загрузка графика...</div>}>
+              <Chart data={chartData} type={chartType} onTypeChange={setChartType} />
+            </Suspense>
           </div>
         </div>
 
